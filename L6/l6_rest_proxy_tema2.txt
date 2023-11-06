@@ -1,0 +1,83 @@
+Open Windows PowerShell. 
+1. Get cluster Id
+
+curl http://localhost:8082/v3/clusters
+In Windows PowerShell, curl is an alis for Invoke-WebRequest command. It is not the curl command. 
+
+Invoke-WebRequest -Uri http://localhost:8082/v3/clusters
+
+Invoke-WebRequest -Uri http://localhost:8082/v3/clusters | Select-Object -Expand Content
+ 
+--> get cluster_id from the json result.
+
+This command uses Invoke-WebRequest to send an HTTP GET request to retrieve a list of clusters. The JSON result is expanded to extract the cluster_id. 
+ 
+2. Set cluster id
+ $cluster="d3naAt0STwqaYJrHHeXo7w"
+
+Here, we are defining a PowerShell variable $cluster and setting it to the cluster ID we want to work with.
+ 
+2. Create topic
+
+$body = @{ "topic_name" ="curl_topic" }
+$headers = @{  'Content-Type'='application/json' }
+ 
+Invoke-WebRequest -Method 'Post' -Uri "http://localhost:8082/v3/clusters/$cluster/topics" -Body ($body|ConvertTo-Json) -Headers $headers -ContentType "application/json"  | Select-Object -Expand Content
+ 
+
+ 
+ curl.exe -X POST -H "Content-Type: application/json" --data '{ \"topic_name\": \"my-topic2\" }' "http://localhost:8082/v3/clusters/$cluster/topics"
+ curl.exe -X POST -H "Content-Type: application/json" --data '{ \"topic_name\": \"topic2\" }' "http://localhost:8082/v3/clusters/$cluster/topics"
+ curl.exe "http://localhost:8082/v3/clusters/$cluster/topics" 
+ 
+ Invoke-WebRequest -Uri http://localhost:8082/v3/clusters/$cluster/topics | Select-Object -Expand Content
+
+This uses Invoke-WebRequest to send an HTTP POST request to create a topic with the specified name. It sends JSON data in the request body and specifies the content type in the headers.
+ 
+3. Describe topic
+
+curl  "http://localhost:8082/v3/clusters/$cluster/topics"
+curl  "http://localhost:8082/v3/clusters/$cluster/topics/postman_topic"
+
+
+curl http://localhost:8082/v3/clusters/TU1DP4VgQGqazrkhYz0Xog/topics/postman_topic
+curl http://localhost:8082/v3/clusters/xZKr78BBRyCqx_5NpTlxow/topics/curl_topic
+curl http://localhost:8082/v3/clusters/$cluster/topics/curl_topic
+
+Here we can make some HTTP GET requests to get data regarding the the topics created from the CLI and from Postman.
+
+4. List all topics 
+
+curl http://localhost:8082/v3/clusters/$cluster/topics
+Invoke-WebRequest -Uri "http://localhost:8082/v3/clusters/$cluster/topics"
+Invoke-WebRequest "http://localhost:8082/v3/clusters/$cluster/topics"
+
+
+5. Send data 
+curl.exe -X POST -H "Content-Type: application/json" --data '{ \"key\": { \"type\": \"JSON\", \"data\": \"key1\" }, \"value\": { \"type\": \"JSON\", \"data\": \"value2 seara\" } }' "http://localhost:8082/v3/clusters/$cluster/topics/curl_topic/records"
+
+The curl.exe command sends an HTTP POST request to send data to a specific topic within the cluster. It specifies the data format and content type.
+
+6. Create a consumer group
+
+curl.exe -X POST -H "Content-Type: application/vnd.kafka.v2+json"  --data '{\"name\": \"FirstConsumer\", \"format\": \"json\", \"auto.offset.reset\": \"earliest\"}'   http://localhost:8082/consumers/HappyGroup
+
+This curl.exe command creates the HappyGroup consumer group with specific settings, including the group name and configuration.
+
+7. Create subscription  
+-- aici se poate adauga si o lista de topic-uri : {\"topics\": [\"postman_topic\", \"topic2\"]}
+curl.exe -X POST -H "Content-Type: application/vnd.kafka.v2+json"  --data '{\"topics\": [\"curl_topic\"]}' http://localhost:8082/consumers/HappyGroup2/instances/FirstConsumer/subscription
+
+Another curl.exe command is used to create a subscription for a consumer group instance. It specifies the topics to subscribe to.
+
+8. Get messages
+curl.exe -X GET  -H "Content-Type: application/vnd.kafka.json.v2+json" -H "Accept: application/vnd.kafka.json.v2+json"  "http://localhost:8082/consumers/HappyGroup/instances/FirstConsumer/records" 
+curl.exe -X GET  -H "Content-Type: application/vnd.kafka.json.v2+json" -H "Accept: application/vnd.kafka.json.v2+json"  "http://localhost:8082/consumers/GrupConsumatori/instances/PrimulConsumer/records"
+
+Here we can get all messages for a consumer instance. 
+
+9. Delete consumer group
+
+curl.exe -X DELETE  -H "Content-Type: application/vnd.kafka.v2+json"  http://localhost:8082/consumers/GrupConsumatori/instances/PrimulConsumer
+
+This curl.exe command sends an HTTP DELETE request to remove a consumer group instance from the Kafka setup.
